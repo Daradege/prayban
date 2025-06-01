@@ -37,13 +37,6 @@
     </div>
 </body>
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(() => console.log('✅ Service Worker Registered'))
-      .catch(err => console.error('❌ SW Error:', err));
-  }
-</script>
-<script>
   let deferredPrompt;
 
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -59,5 +52,13 @@
       }
       deferredPrompt = null;
     });
-  });</script>
+  });
+  </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('✅ Service Worker ثبت شد:', reg))
+      .catch(err => console.error('❌ خطا در Service Worker:', err));
+  }
+</script>
 </html>
