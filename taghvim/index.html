@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقویم نمازبان</title>
+    <link href="/tailwind.css" rel="stylesheet">
+    <script src="/node_modules/moment/min/moment.min.js"></script>
+    <script src="/node_modules/moment-jalaali/build/moment-jalaali.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <link rel="preload" href="../assets/namaz.jpg" as="image">
+</head>
+<body class="m-0 p-0 font-['Vazirmatn']">
+    <div class="min-h-screen w-full bg-[url('../assets/namaz.jpg')] bg-cover bg-center bg-no-repeat flex flex-col items-center justify-center text-center text-white before:content-[''] before:absolute before:inset-0 before:bg-black before:opacity-50 relative p-4">
+        <div class="drop-shadow-lg z-10 bg-white/10 backdrop-blur-sm p-8 rounded-xl w-full max-w-4xl">
+            <h1 class="text-4xl md:text-5xl mb-8 font-bold">تقویم نمازبان</h1>
+
+            <div class="flex justify-between items-center mb-6">
+                <button id="prevMonth" class="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30">ماه قبل</button>
+                <h2 id="currentMonth" class="text-2xl font-bold"></h2>
+                <button id="nextMonth" class="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30">ماه بعد</button>
+            </div>
+
+            <div class="grid grid-cols-7 gap-2 mb-4">
+                <div class="font-bold">ش</div>
+                <div class="font-bold">ی</div>
+                <div class="font-bold">د</div>
+                <div class="font-bold">س</div>
+                <div class="font-bold">چ</div>
+                <div class="font-bold">پ</div>
+                <div class="font-bold">ج</div>
+            </div>
+
+            <div id="calendar" class="grid grid-cols-7 gap-2"></div>
+
+            <div id="todayInfo" class="mt-4 text-lg"></div>
+
+            
+            <div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div class="bg-white text-black p-6 rounded-lg w-96">
+                    <h3 class="text-xl font-bold mb-4">افزودن رویداد</h3>
+                    <input type="text" id="eventTitle" placeholder="عنوان رویداد" class="w-full p-2 mb-4 border rounded">
+                    <textarea id="eventDescription" placeholder="توضیحات" class="w-full p-2 mb-4 border rounded"></textarea>
+                    <div class="flex justify-end gap-2">
+                        <button id="saveEvent" class="px-4 py-2 bg-green-500 text-white rounded">ذخیره</button>
+                        <button id="closeModal" class="px-4 py-2 bg-gray-500 text-white rounded">انصراف</button>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="mt-8 bg-white/20 p-6 rounded-lg">
+                <h3 class="text-xl font-bold mb-4">رویدادهای امروز</h3>
+                <div id="eventsList" class="space-y-2"></div>
+                <div id="occasion" class="mt-4 text-lg"></div>
+            </div>
+
+            <a href="/" class="inline-block px-8 py-4 mt-8 text-lg bg-white text-black font-bold rounded-lg hover:bg-blue-600 hover:text-white transform hover:transition shadow-lg">
+                بازگشت به صفحه اصلی
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            moment.loadPersian({usePersianDigits: true});
+            let currentDate = moment();
+            let selectedDate = null;
+            const events = JSON.parse(localStorage.getItem('calendar_events') || '{}');
+            const today = moment();
+            let controller = null;
+
+            function updateCalendar() {
+                const firstDay = moment(currentDate).startOf('jMonth');
+                const daysInMonth = moment.jDaysInMonth(currentDate.jYear(), currentDate.jMonth());
+                let startDay = firstDay.day();
+                
+                startDay = (startDay + 1) % 7;
+
+                document.getElementById('currentMonth').textContent = 
+                    currentDate.format('jMMMM jYYYY');
+
+                const calendar = document.getElementById('calendar');
+                calendar.innerHTML = '';
+
+                for (let i = 0; i < startDay; i++) {
+                    calendar.appendChild(createDayCell(''));
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const cell = createDayCell(day);
+                    const dateKey = `${currentDate.format('jYYYY-jMM')}-${String(day).padStart(2, '0')}`;
+                    
+                    if (currentDate.format('jYYYY-jMM') === today.format('jYYYY-jMM') && day === today.jDate()) {
+                        cell.classList.add('font-bold', 'bg-white/40');
+                    }
+
+                    if (events[dateKey]) {
+                        cell.classList.add('bg-blue-500/30');
+                    }
+
+                    cell.addEventListener('click', () => {
+                        selectedDate = dateKey;
+                        document.getElementById('eventModal').classList.remove('hidden');
+                        updateEventsList(dateKey);
+                        const clickedDate = moment(currentDate).jDate(day);
+                        fetchHolidays(clickedDate);
+                    });
+
+                    calendar.appendChild(cell);
+                }
+
+                const todayInfo = document.getElementById('todayInfo');
+                todayInfo.textContent = `امروز: ${today.format('dddd، jD jMMMM jYYYY')}`;
+            }
+
+            function createDayCell(content) {
+                const cell = document.createElement('div');
+                cell.className = 'aspect-square bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 cursor-pointer';
+                cell.textContent = content;
+                return cell;
+            }
+
+            function updateEventsList(dateKey) {
+                const eventsList = document.getElementById('eventsList');
+                eventsList.innerHTML = '';
+
+                if (events[dateKey]) {
+                    events[dateKey].forEach((event, index) => {
+                        const eventElement = document.createElement('div');
+                        eventElement.className = 'flex justify-between items-center bg-white/20 p-2 rounded';
+                        eventElement.innerHTML = `
+                            <div>
+                                <div class="font-bold">${event.title}</div>
+                                <div class="text-sm">${event.description}</div>
+                            </div>
+                            <button class="delete-event px-2 py-1 bg-red-500 rounded" data-index="${index}">حذف</button>
+                        `;
+                        eventsList.appendChild(eventElement);
+                    });
+                }
+
+                document.querySelectorAll('.delete-event').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const index = e.target.dataset.index;
+                        events[dateKey].splice(index, 1);
+                        if (events[dateKey].length === 0) {
+                            delete events[dateKey];
+                        }
+                        localStorage.setItem('calendar_events', JSON.stringify(events));
+                        updateEventsList(dateKey);
+                        updateCalendar();
+                    });
+                });
+            }
+
+            async function fetchHolidays(date) {
+                try {
+                    if (controller) {
+                        controller.abort();
+                    }
+                    controller = new AbortController();
+                    
+                    const persianDate = new Intl.DateTimeFormat('fa-IR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    }).format(date).replace(/\//g, '/').replace(/[۰-۹]/g, d => String.fromCharCode(d.charCodeAt(0) - 1728));
+                    
+                    const response = await fetch('https://api.daradege.ir/holiday?date=' + persianDate, {
+                        signal: controller.signal
+                    });
+                    
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    
+                    const data = await response.json();
+                    const uniqueEvents = [...new Set(data.events.map(event => event.description))];
+                    
+                    requestAnimationFrame(() => {
+                        const occasionElement = document.getElementById('occasion');
+                        occasionElement.textContent = uniqueEvents.length > 0 ? uniqueEvents.join('، ') : 'مناسبتی ثبت نشده است';
+                    });
+                } catch (error) {
+                    if (error.name === 'AbortError') return;
+                    console.error('Error fetching holidays:', error);
+                    document.getElementById('occasion').textContent = 'خطا در دریافت اطلاعات';
+                } finally {
+                    controller = null;
+                }
+            }
+
+            document.getElementById('prevMonth').addEventListener('click', () => {
+                currentDate.subtract(1, 'jMonth');
+                updateCalendar();
+            });
+
+            document.getElementById('nextMonth').addEventListener('click', () => {
+                currentDate.add(1, 'jMonth');
+                updateCalendar();
+            });
+
+            document.getElementById('closeModal').addEventListener('click', () => {
+                document.getElementById('eventModal').classList.add('hidden');
+            });
+
+            document.getElementById('saveEvent').addEventListener('click', () => {
+                const title = document.getElementById('eventTitle').value;
+                const description = document.getElementById('eventDescription').value;
+
+                if (title && selectedDate) {
+                    if (!events[selectedDate]) {
+                        events[selectedDate] = [];
+                    }
+                    events[selectedDate].push({ title, description });
+                    localStorage.setItem('calendar_events', JSON.stringify(events));
+
+                    document.getElementById('eventTitle').value = '';
+                    document.getElementById('eventDescription').value = '';
+                    document.getElementById('eventModal').classList.add('hidden');
+
+                    updateCalendar();
+                    updateEventsList(selectedDate);
+                }
+            });
+
+            updateCalendar();
+            fetchHolidays(today);
+        });
+    </script>
+</body>
+</html>

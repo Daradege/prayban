@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ذکر های هفته - نمازبان</title>
+    <link rel="stylesheet" href="/tailwind.css">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <link rel="preload" href="../assets/namaz.jpg" as="image">
+</head>
+<body class="m-0 p-0 font-['Vazirmatn']">
+    <div class="min-h-screen w-full bg-[url('../assets/namaz.jpg')] bg-cover bg-center bg-no-repeat flex flex-col items-center justify-center text-center text-white before:content-[''] before:absolute before:inset-0 before:bg-black before:opacity-50 relative p-4">
+        <div class="drop-shadow-lg z-10 bg-white/10 backdrop-blur-sm p-8 rounded-xl">
+            <h1 class="text-4xl md:text-5xl mb-4 font-bold text-white">ذکر های هفته</h1>
+            
+            <div class="mb-8 text-xl">
+                <h2 class="text-2xl font-bold mb-4">ذکر امروز:</h2>
+                <p class="text-green-400" id="todayZekr">یا رب العالمین</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white/20 p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4">ذکر های روزهای هفته</h3>
+                    <ul class="text-right space-y-2">
+                        <li>شنبه: یا رب العالمین</li>
+                        <li>یکشنبه: یا ذالجلال و الاکرام</li>
+                        <li>دوشنبه: یا قاضی الحاجات</li>
+                        <li>سه شنبه: یا ارحم الراحمین</li>
+                        <li>چهارشنبه: یا حی یا قیوم</li>
+                        <li>پنجشنبه: لا اله الا الله</li>
+                        <li>جمعه: یا الله</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white/20 p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4">اطلاعات امروز</h3>
+                    <div class="space-y-2" id="todayInfo">
+                        <p>تاریخ: <span id="date"></span></p>
+                        <p>روز هفته: <span id="day"></span></p>
+                        <p>ماه قمری: <span id="hijriMonth"></span></p>
+                        <p>مناسبت: <span id="occasion">در حال بارگذاری...</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/20 p-6 rounded-lg mb-8">
+                <h3 class="text-xl font-bold mb-4">اعمال مستحبی امروز</h3>
+                <ul class="text-right space-y-2" id="todayAmal">
+                    <li class="day-saturday hidden">🔹 دو رکعت نماز مستحب و دعای مخصوص</li>
+                    <li class="day-saturday hidden">🔸 زیارت پیامبر اکرم (ص)</li>
+                    <li class="day-saturday hidden">🔸 شروع کارها با نام خدا</li>
+                    <li class="day-saturday hidden">🔸 دعا برای توفیق اعمال خوب در هفته</li>
+
+                    <li class="day-sunday hidden">🔹 دو رکعت نماز با سوره «فاتحه» و «توحید» در هر رکعت</li>
+                    <li class="day-sunday hidden">🔹 دعای مخصوص روز یکشنبه از مفاتیح‌الجنان</li>
+                    <li class="day-sunday hidden">🔸 صدقه دادن</li>
+                    <li class="day-sunday hidden">🔸 زیارت امام علی علیه‌السلام</li>
+                    <li class="day-sunday hidden">🔸 خواندن دعای "اللهم اجعل أول يومی هذا صلاحاً..."</li>
+
+                    <li class="day-monday hidden">🔹 دو رکعت نماز با سوره «فاتحه» و «قدر» در رکعت اول و «توحید» در دوم</li>
+                    <li class="day-monday hidden">🔸 روزه گرفتن مستحب</li>
+                    <li class="day-monday hidden">🔸 زیارت پیامبر اکرم صلی‌الله‌علیه‌وآله</li>
+                    <li class="day-monday hidden">🔸 دعای روز دوشنبه از امام زین‌العابدین (ع)</li>
+                    <li class="day-monday hidden">🔸 استغفار بسیار</li>
+
+                    <li class="day-tuesday hidden">🔹 دو رکعت نماز با سوره «فاتحه» و «آل‌عمران»</li>
+                    <li class="day-tuesday hidden">🔸 دعای روز سه‌شنبه</li>
+                    <li class="day-tuesday hidden">🔸 طلب عافیت و سلامتی</li>
+                    <li class="day-tuesday hidden">🔸 صلوات زیاد فرستادن</li>
+                    <li class="day-tuesday hidden">🔸 زیارت امام حسن و امام حسین علیهماالسلام</li>
+
+                    <li class="day-wednesday hidden">🔹 چهار رکعت نماز با دعای مخصوص</li>
+                    <li class="day-wednesday hidden">🔸 دعای روز چهارشنبه</li>
+                    <li class="day-wednesday hidden">🔸 استعاذه و پناه‌بردن به خدا از شر دشمنان</li>
+                    <li class="day-wednesday hidden">🔸 طلب حوائج دنیا و آخرت</li>
+
+                    <li class="day-thursday hidden">🔹 دو رکعت نماز و دعای مخصوص</li>
+                    <li class="day-thursday hidden">🔸 روزه گرفتن مستحب</li>
+                    <li class="day-thursday hidden">🔸 تلاوت سوره‌های «یس» و «ملک»</li>
+                    <li class="day-thursday hidden">🔸 زیارت اهل قبور</li>
+                    <li class="day-thursday hidden">🔸 صدقه دادن برای اموات</li>
+                    <li class="day-thursday hidden">🔸 دعای کمیل</li>
+
+                    <li class="day-friday hidden">🔹 نماز نافله جمعه ۸ رکعت</li>
+                    <li class="day-friday hidden">🔸 غسل جمعه</li>
+                    <li class="day-friday hidden">🔸 خواندن سوره کهف، جمعه، و سوره ص</li>
+                    <li class="day-friday hidden">🔸 دعای ندبه</li>
+                    <li class="day-friday hidden">🔸 زیارت امام زمان عجل‌الله‌فرجه</li>
+                    <li class="day-friday hidden">🔸 صلوات زیاد</li>
+                    <li class="day-friday hidden">🔸 دعا برای فرج</li>
+                    <li class="day-friday hidden">🔸 استغفار بسیار</li>
+                </ul>
+            </div>
+
+            <a href="/" 
+                class="inline-block px-8 py-4 text-lg bg-white text-black font-bold rounded-lg hover:bg-blue-600 hover:text-white transform hover: transition shadow-lg">
+                بازگشت به صفحه اصلی
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const days = ['یکشنبه', 'دوشنبه', 'سه شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
+            const date = new Date();
+            const dayIndex = date.getDay();
+            
+            requestAnimationFrame(() => {
+                document.getElementById('day').textContent = days[dayIndex];
+                document.getElementById('date').textContent = new Intl.DateTimeFormat('fa-IR').format(date);
+
+                const dayClasses = ['day-sunday', 'day-monday', 'day-tuesday', 'day-wednesday', 'day-thursday', 'day-friday', 'day-saturday'];
+                const todayClass = dayClasses[dayIndex];
+                document.querySelectorAll('.' + todayClass).forEach(el => el.classList.remove('hidden'));
+            });
+
+            let controller = null;
+            async function fetchHolidays() {
+                try {
+                    if (controller) {
+                        controller.abort();
+                    }
+                    controller = new AbortController();
+                    
+                    const persianDate = new Intl.DateTimeFormat('fa-IR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    }).format(date).replace(/\//g, '/').replace(/[۰-۹]/g, d => String.fromCharCode(d.charCodeAt(0) - 1728));
+                    
+                    const response = await fetch('https://api.daradege.ir/holiday?date=' + persianDate, {
+                        signal: controller.signal
+                    });
+                    
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    
+                    const data = await response.json();
+                    const uniqueEvents = [...new Set(data.events.map(event => event.description))];
+                    
+                    requestAnimationFrame(() => {
+                        const occasionElement = document.getElementById('occasion');
+                        occasionElement.textContent = uniqueEvents.length > 0 ? uniqueEvents.join('، ') : 'مناسبتی ثبت نشده است';
+                    });
+                } catch (error) {
+                    if (error.name === 'AbortError') return;
+                    console.error('Error fetching holidays:', error);
+                    document.getElementById('occasion').textContent = 'خطا در دریافت اطلاعات';
+                } finally {
+                    controller = null;
+                }
+            }
+
+            fetchHolidays();
+        });
+    </script>
+</body>
+</html>

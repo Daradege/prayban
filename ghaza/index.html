@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نمازبان - مدیریت نماز قضا</title>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <link rel="stylesheet" href="/tailwind.css">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="m-0 p-0 font-['Vazirmatn'] bg-gray-50">
+    <div class="min-h-screen w-full bg-[url('../assets/namaz.jpg')] bg-cover bg-center bg-no-repeat flex flex-col items-center justify-center text-center text-white before:content-[''] before:absolute before:inset-0 before:bg-black before:opacity-60 relative p-2">
+        <div class="bg-white/95 p-4 sm:p-8 rounded-2xl shadow-2xl z-10 w-full max-w-md backdrop-blur-sm">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 tracking-tight">مدیریت نماز های قضا</h1>
+            
+            <div class="space-y-4 mb-8">
+                <div class="flex flex-col gap-2">
+                    <label class="text-gray-900 text-right text-base sm:text-lg font-medium">نوع محاسبه:</label>
+                    <select id="calculationType" class="p-3 border-2 border-gray-200 rounded-xl text-right bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-800 outline-none text-base">
+                        <option value="manual">دستی</option>
+                        <option value="date">بر اساس تاریخ</option>
+                    </select>
+                </div>
+
+                <div id="dateInputs" class="flex flex-col gap-3" style="display: none;">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-gray-900 text-right text-base sm:text-lg font-medium">سال:</label>
+                            <input type="number" id="years" class="p-3 border-2 border-gray-200 rounded-xl text-right bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-800 outline-none" min="0" value="0">
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-gray-900 text-right text-base sm:text-lg font-medium">ماه:</label>
+                            <input type="number" id="months" class="p-3 border-2 border-gray-200 rounded-xl text-right bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-800 outline-none" min="0" max="11" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="manualInputs">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-gray-900 text-right text-base sm:text-lg font-medium">نوع نماز:</label>
+                        <select id="prayerType" class="p-3 border-2 border-gray-200 rounded-xl text-right bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-800 outline-none text-base">
+                            <option value="صبح">صبح</option>
+                            <option value="ظهر">ظهر</option>
+                            <option value="عصر">عصر</option>
+                            <option value="مغرب">مغرب</option>
+                            <option value="عشاء">عشاء</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2 mt-3">
+                        <label class="text-gray-900 text-right text-base sm:text-lg font-medium">تعداد:</label>
+                        <input type="number" id="count" class="p-3 border-2 border-gray-200 rounded-xl text-right bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-800 outline-none" min="1" value="1">
+                    </div>
+                </div>
+
+                <button onclick="addPrayer()" class="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 text-base sm:text-lg font-medium shadow-lg">
+                    افزودن نماز قضا
+                </button>
+            </div>
+
+            <div class="border-t-2 border-gray-100 pt-4">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4">لیست نماز های قضا شده</h2>
+                <div id="prayerList" class="space-y-2"></div>
+            </div>
+
+            <button onclick="clearAll()" class="mt-6 w-full bg-red-500 text-white py-3 rounded-xl hover:bg-red-600 active:bg-red-700 transition-all duration-200 text-base font-medium shadow-lg">
+                پاک کردن همه
+            </button>
+            <button onclick="window.location.href = '/'" class="mt-4 w-full bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 active:bg-gray-700 transition-all duration-200 text-base font-medium shadow-lg">
+                بازگشت به صفحه اصلی
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function savePrayers(prayers) {
+            localStorage.setItem('missedPrayers', JSON.stringify(prayers));
+        }
+
+        function loadPrayers() {
+            const prayers = localStorage.getItem('missedPrayers');
+            return prayers ? JSON.parse(prayers) : [];
+        }
+
+        function updatePrayerList() {
+            const prayers = loadPrayers();
+            const prayerList = document.getElementById('prayerList');
+            prayerList.innerHTML = '';
+
+            prayers.forEach((prayer, index) => {
+                const prayerDiv = document.createElement('div');
+                prayerDiv.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-xl border-2 border-gray-100';
+                prayerDiv.innerHTML = `
+                    <span class="text-gray-800 text-base">${prayer.type} - ${prayer.count} عدد</span>
+                    <div class="flex gap-1">
+                        <button onclick="incrementPrayer(${index})" class="text-blue-500 bg-blue-50 px-3 py-2 rounded-lg active:bg-blue-100">
+                            +
+                        </button>
+                        <button onclick="decrementPrayer(${index})" class="text-yellow-500 bg-yellow-50 px-3 py-2 rounded-lg active:bg-yellow-100">
+                            -
+                        </button>
+                        <button onclick="removePrayer(${index})" class="text-red-500 bg-red-50 px-3 py-2 rounded-lg active:bg-red-100">
+                            حذف
+                        </button>
+                    </div>
+                `;
+                prayerList.appendChild(prayerDiv);
+            });
+        }
+
+        function calculatePrayersFromDate() {
+            const years = parseInt(document.getElementById('years').value) || 0;
+            const months = parseInt(document.getElementById('months').value) || 0;
+            
+            let totalDays = 0;
+            let leapYears = Math.floor(years / 4);
+            totalDays = (years * 365) + leapYears + (months * 30);
+
+            return {
+                'صبح': totalDays,
+                'ظهر': totalDays,
+                'عصر': totalDays,
+                'مغرب': totalDays,
+                'عشاء': totalDays
+            };
+        }
+
+        function addPrayer() {
+            const calculationType = document.getElementById('calculationType').value;
+            const prayers = loadPrayers();
+
+            if (calculationType === 'date') {
+                const calculatedPrayers = calculatePrayersFromDate();
+                Object.entries(calculatedPrayers).forEach(([type, count]) => {
+                    if (count > 0) {
+                        prayers.push({ type, count });
+                    }
+                });
+            } else {
+                const type = document.getElementById('prayerType').value;
+                const count = parseInt(document.getElementById('count').value);
+                if (count < 1) return;
+                prayers.push({ type, count });
+            }
+
+            savePrayers(prayers);
+            updatePrayerList();
+        }
+
+        function incrementPrayer(index) {
+            const prayers = loadPrayers();
+            prayers[index].count++;
+            savePrayers(prayers);
+            updatePrayerList();
+        }
+
+        function decrementPrayer(index) {
+            const prayers = loadPrayers();
+            if (prayers[index].count > 1) {
+                prayers[index].count--;
+                savePrayers(prayers);
+                updatePrayerList();
+            } else {
+                removePrayer(index);
+            }
+        }
+
+        function removePrayer(index) {
+            const prayers = loadPrayers();
+            prayers.splice(index, 1);
+            savePrayers(prayers);
+            updatePrayerList();
+        }
+
+        function clearAll() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید همه نماز های قضا را پاک کنید؟')) {
+                localStorage.removeItem('missedPrayers');
+                updatePrayerList();
+            }
+        }
+
+        document.getElementById('calculationType').addEventListener('change', function() {
+            const dateInputs = document.getElementById('dateInputs');
+            const manualInputs = document.getElementById('manualInputs');
+            
+            if (this.value === 'date') {
+                dateInputs.style.display = 'block';
+                manualInputs.style.display = 'none';
+            } else {
+                dateInputs.style.display = 'none';
+                manualInputs.style.display = 'block';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', updatePrayerList);
+    </script>
+</body>
+</html>

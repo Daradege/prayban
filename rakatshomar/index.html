@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رکعت شمار نماز</title>
+    <link rel="stylesheet" href="/tailwind.css">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="m-0 p-0 font-['Vazirmatn'] bg-gray-100">
+    <div class="min-h-screen w-full flex flex-col items-center justify-center text-center p-4">
+        <h1 class="text-3xl mb-8 font-bold text-gray-800">رکعت شمار نماز</h1>
+        
+        <div id="counter" class="w-64 h-64 rounded-full bg-white shadow-2xl flex items-center justify-center cursor-pointer hover:shadow-inner transition-all duration-300 transform hover:scale-105 border-8 border-gray-200">
+            <span id="rakat" class="text-6xl font-bold text-gray-700">۰</span>
+        </div>
+
+        <div class="mt-8 text-xl text-gray-600" id="status">رکعت اول</div>
+        
+        <div class="mt-8 space-y-4">
+            <button onclick="resetCounter()" class="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                شروع مجدد
+            </button>
+            <button onclick="window.location.href='/'" class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                بازگشت به صفحه اصلی
+            </button>
+            <div class="text-sm text-gray-500">برای شمارش رکعت، روی مُهر کلیک کنید</div>
+        </div>
+    </div>
+
+    <script>
+        let count = 0;
+        const persianNumbers = ['۰', '۱', '۲', '۳', '۴'];
+        const rakatStatus = ['رکعت اول', 'رکعت دوم', 'رکعت سوم', 'رکعت چهارم', 'نماز به پایان رسید'];
+        
+        document.getElementById('counter').addEventListener('click', () => {
+            if (count < 4) {
+                count++;
+                updateDisplay();
+            }
+        });
+
+        function resetCounter() {
+            count = 0;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('rakat').textContent = persianNumbers[count];
+            document.getElementById('status').textContent = rakatStatus[count - 1];
+            
+            if (count === 4) {
+                document.getElementById('counter').style.backgroundColor = '#4CAF50';
+                document.getElementById('rakat').style.color = 'white';
+            } else {
+                document.getElementById('counter').style.backgroundColor = 'white';
+                document.getElementById('rakat').style.color = '#374151';
+            }
+        }
+    </script>
+</body>
+</html>
