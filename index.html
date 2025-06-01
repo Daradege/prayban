@@ -6,6 +6,8 @@
     <title>نمازبان - مدیریت عبادت های شما</title>
     <link rel="stylesheet" href="tailwind.css">
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4CAF50">
 </head>
 <body class="m-0 p-0 font-['Vazirmatn']">
     <div class="min-h-screen w-full bg-[url('assets/namaz.jpg')] bg-cover bg-center bg-no-repeat flex flex-col items-center justify-center text-center text-white before:content-[''] before:absolute before:inset-0 before:bg-black before:opacity-50 relative p-4">
@@ -33,4 +35,11 @@
         </div>
     </div>
 </body>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(() => console.log('✅ Service Worker Registered'))
+      .catch(err => console.error('❌ SW Error:', err));
+  }
+</script>
 </html>
